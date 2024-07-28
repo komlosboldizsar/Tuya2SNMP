@@ -24,15 +24,12 @@ namespace Tuya2SNMP.Tuya
         private static readonly byte[] VERSION_HEADER = Encoding.UTF8.GetBytes("3.4");
         private static readonly TuyaCommandV34[] COMMANDS_WITHOUT_VERSION = new TuyaCommandV34[]
         {
-            TuyaCommandV34.DP_QUERY,
-            TuyaCommandV34.HEART_BEAT,
-            TuyaCommandV34.DP_QUERY_NEW,
-            TuyaCommandV34.BIND,
-            TuyaCommandV34.RENAME_DEVICE,
-            TuyaCommandV34.UPDATE_DPS,
             TuyaCommandV34.SESS_KEY_NEG_START,
             TuyaCommandV34.SESS_KEY_NEG_RES,
-            TuyaCommandV34.SESS_KEY_NEG_FINISH
+            TuyaCommandV34.SESS_KEY_NEG_FINISH,
+            TuyaCommandV34.HEART_BEAT,
+            TuyaCommandV34.DP_QUERY_NEW,
+            TuyaCommandV34.UPDATE_DPS
         };
 
         public TuyaLocalResponse DecodeResponse(byte[] data)
@@ -102,13 +99,13 @@ namespace Tuya2SNMP.Tuya
             payload = Encrypt(payload);
 
             using MemoryStream memoryStream = new();
-            memoryStream.Write(PREFIX, 0, 4);
+            memoryStream.Write(TuyaConstants.PREFIX, 0, 4);
             memoryStream.WriteBytesBigEndian(++SeqNo);
             memoryStream.WriteBytesBigEndian((uint)command);
             memoryStream.WriteBytesBigEndian(payload.Length + 36);
             memoryStream.Write(payload);
             memoryStream.Write(MAC(memoryStream.ToArray()));
-            memoryStream.Write(SUFFIX, 0, 4);
+            memoryStream.Write(TuyaConstants.SUFFIX, 0, 4);
             return memoryStream.ToArray();
 
         }
