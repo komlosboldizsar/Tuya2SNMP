@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Tuya2SNMP.Devices.MiboxerFUTW
+namespace Tuya2SNMP.SnmpAdapters.MiboxerFUTW
 {
     internal class DPs
     {

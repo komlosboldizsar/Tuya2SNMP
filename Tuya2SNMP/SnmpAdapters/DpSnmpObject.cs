@@ -2,7 +2,7 @@
 using Lextm.SharpSnmpLib;
 using Lextm.SharpSnmpLib.Pipeline;
 
-namespace Tuya2SNMP
+namespace Tuya2SNMP.SnmpAdapters
 {
     internal class DpSnmpObject : ScalarObject
     {

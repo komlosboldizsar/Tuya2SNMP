@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Documents;
 
-namespace Tuya2SNMP
+namespace Tuya2SNMP.SnmpAdapters
 {
     internal abstract partial class DeviceSnmpAdapter : Device.IDpWatcher
     {

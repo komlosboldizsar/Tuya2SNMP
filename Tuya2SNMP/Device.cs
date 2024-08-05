@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Tuya2SNMP.SnmpAdapters;
 using Tuya2SNMP.Tuya;
 
 namespace Tuya2SNMP

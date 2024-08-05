@@ -4,9 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Tuya2SNMP.Devices.MiboxerFUTW;
 
-namespace Tuya2SNMP
+namespace Tuya2SNMP.SnmpAdapters
 {
     internal class DeviceSnmpAdapterTypeRegistry
     {

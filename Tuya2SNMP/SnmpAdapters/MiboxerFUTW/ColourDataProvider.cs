@@ -1,6 +1,6 @@
 ﻿using Lextm.SharpSnmpLib;
 
-namespace Tuya2SNMP.Devices.MiboxerFUTW
+namespace Tuya2SNMP.SnmpAdapters.MiboxerFUTW
 {
     internal class ColourDataProvider : SimpleDataProvider
     {

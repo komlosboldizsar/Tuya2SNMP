@@ -4,8 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Tuya2SNMP.SnmpAdapters;
 
-namespace Tuya2SNMP.Devices.MiboxerFUTW
+namespace Tuya2SNMP.SnmpAdapters.MiboxerFUTW
 {
     internal class MiboxerFUT037W : DeviceSnmpAdapter
     {

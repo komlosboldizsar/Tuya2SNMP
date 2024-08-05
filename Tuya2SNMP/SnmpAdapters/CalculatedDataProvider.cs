@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Tuya2SNMP
+namespace Tuya2SNMP.SnmpAdapters
 {
     internal abstract class CalculatedDataProvider : DataProvider
     {

@@ -1,6 +1,6 @@
 ﻿using BToolbox.SNMP;
 
-namespace Tuya2SNMP
+namespace Tuya2SNMP.SnmpAdapters
 {
     internal class DeviceSnmpAgent : SnmpAgent
     {
