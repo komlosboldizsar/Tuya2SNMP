@@ -1,4 +1,6 @@
-﻿using BToolbox.XmlDeserializer;
+﻿using BToolbox.Model;
+using BToolbox.SNMP;
+using BToolbox.XmlDeserializer;
 using BToolbox.XmlDeserializer.Context;
 using BToolbox.XmlDeserializer.Exceptions;
 using BToolbox.XmlDeserializer.Helpers;
@@ -60,14 +62,21 @@ namespace Tuya2SNMP
         private static TypedCompositeDeserializer<Config, Config> createDeserializer()
         {
             TypedCompositeDeserializer<Config, Config> configDeserializer = new(ConfigTagNames.ROOT, () => new Config());
-            SimpleListDeserializer<Device, Config> switchesDeserializer = new(ConfigTagNames.DEVICES, new DeviceDeserializer());
-            configDeserializer.Register(switchesDeserializer, (config, devices) => config.Devices = devices);
+            SimpleListDeserializer<Device, Config> devicesDeserializer = new(ConfigTagNames.DEVICES, new DeviceDeserializer());
+            configDeserializer.Register(devicesDeserializer, (config, devices) => config.Devices = devices);
+            SimpleListDeserializer<TrapTarget, Config> trapTargetsDeserializer = new(ConfigTagNames.TRAPTARGETS, new TrapTargetDeserializer());
+            configDeserializer.Register(trapTargetsDeserializer, (config, trapTargets) =>
+            {
+                config.TrapSendingConfig = new();
+                trapTargets.Foreach(trd => config.TrapSendingConfig.AddReceiver(trd.IP, trd.Port, trd.Version, trd.Community, null, trd.SendMyIp));
+            });
             return configDeserializer;
         }
 
         private static void rootDeserializerContextInitializer(DeserializationContext context)
         {
             context.RegisterTypeName<Device>("device");
+            context.RegisterTypeName<TrapTarget>("trap target");
         }
 
     }

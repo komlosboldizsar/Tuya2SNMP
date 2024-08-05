@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 namespace Tuya2SNMP.Tuya
 {
 
-    public class TuyaDeviceV34 : IDisposable
+    public class TuyaDeviceV34 : ITuyaDevice, IDisposable
     {
 
         public string IP { get; private set; }
@@ -56,7 +56,6 @@ namespace Tuya2SNMP.Tuya
         private readonly SemaphoreSlim sem = new(1);
         internal readonly TuyaCoderV34 coder;
 
-
         public byte[] EncodeRequest(TuyaCommandV34 command, object content)
             => coder.EncodeRequest(command, content);
 
@@ -83,7 +82,7 @@ namespace Tuya2SNMP.Tuya
             }
         }
 
-        public bool PermanentConnection;
+        public bool PermanentConnection { get; set; }
 
         public async Task ConnectAsync(CancellationToken cancellationToken = default)
         {
@@ -104,6 +103,7 @@ namespace Tuya2SNMP.Tuya
 
         public void Disconnect()
         {
+            ConnectionLost?.Invoke(this, false);
             _connectedMRS.Reset();
             SessionKey = null;
             _receiveTaskCancellationTokenSource.Cancel();
@@ -114,6 +114,10 @@ namespace Tuya2SNMP.Tuya
             catch { }
             client = null;
         }
+
+
+        public event TuyaDeviceConnectionStateChangedHandler ConnectionEstablished;
+        public event TuyaDeviceConnectionStateChangedHandler ConnectionLost;
 
         private CancellationTokenSource _receiveTaskCancellationTokenSource;
 
@@ -177,6 +181,7 @@ namespace Tuya2SNMP.Tuya
                 var root = JObject.Parse(response.JSON);
                 var dps = JsonConvert.DeserializeObject<Dictionary<string, object>>(root.GetValue("dps").ToString());
                 Dictionary<int, object> dpsDict = dps.ToDictionary(kv => int.Parse(kv.Key), kv => kv.Value);
+                DpsUpdated?.Invoke(this, dpsDict);
                 return;
             }
 
@@ -190,11 +195,13 @@ namespace Tuya2SNMP.Tuya
                 SessionKey = CalculateSessionKey(tempKeyRemote);
                 _keyExchangeStarted = false;
                 _connectedMRS.Set();
+                ConnectionEstablished?.Invoke(this, true);
                 return;
             }
 
         }
 
+        public event TuyaDeviceDpsUpdatedHandler DpsUpdated;
 
         private async Task SendSessKeyNegStartAsync(CancellationToken cancellationToken = default)
         {

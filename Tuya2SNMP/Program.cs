@@ -1,3 +1,5 @@
+using BToolbox.Model;
+using BToolbox.SNMP;
 using BToolbox.XmlDeserializer.Exceptions;
 using CommandLine;
 using Tuya2SNMP.Logger;
@@ -22,6 +24,11 @@ namespace Tuya2SNMP
             {
                 LogDispatcher.I("Loading configuration...");
                 config = (new ConfigDeserializer()).LoadConfig(parsedArguments.ConfigFile ?? DEFAULT_CONFIG_FILE);
+                foreach (Device device in config.Devices)
+                {
+                    device.StartSnmpAgent();
+                    device.StartTuyaAgent();
+                }
             }
             catch (DeserializationException e)
             {
