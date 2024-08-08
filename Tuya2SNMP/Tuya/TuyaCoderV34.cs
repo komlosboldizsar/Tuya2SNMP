@@ -72,8 +72,11 @@ namespace Tuya2SNMP.Tuya
             byte[] decryptedPayload = Decrypt(payload.Part(0, -4));
             if (!COMMANDS_WITHOUT_VERSION.Contains(command))
                 decryptedPayload = decryptedPayload.Part(15);
-            byte last = decryptedPayload[^1];
-            decryptedPayload = decryptedPayload.Part(0, -last);
+            if (decryptedPayload.Length > 0) // De-pad
+            {
+                byte last = decryptedPayload[^1];
+                decryptedPayload = decryptedPayload.Part(0, -last);
+            }
 
             return new TuyaLocalResponse(command, seqNo, returnCode, decryptedPayload);
 
