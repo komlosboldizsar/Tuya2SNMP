@@ -63,7 +63,11 @@ namespace Tuya2SNMP
         {
             TypedCompositeDeserializer<Config, Config> configDeserializer = new(ConfigTagNames.ROOT, () => new Config());
             SimpleListDeserializer<Device, Config> devicesDeserializer = new(ConfigTagNames.DEVICES, new DeviceDeserializer());
-            configDeserializer.Register(devicesDeserializer, (config, devices) => config.Devices = devices);
+            configDeserializer.Register(devicesDeserializer, (config, devices) =>
+            {
+                config.Devices = devices;
+                devices.ForEach(d => d.Config = config);
+            });
             SimpleListDeserializer<TrapTarget, Config> trapTargetsDeserializer = new(ConfigTagNames.TRAPTARGETS, new TrapTargetDeserializer());
             configDeserializer.Register(trapTargetsDeserializer, (config, trapTargets) =>
             {

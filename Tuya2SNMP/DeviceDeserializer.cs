@@ -19,7 +19,6 @@ namespace Tuya2SNMP
         {
             Device device = new()
             {
-                Config = parent as Config,
                 Name = elementNode.AttributeAsString(ATTR_NAME, context).Mandatory().NotEmpty().Get().Value,
                 Type = elementNode.AttributeAsString(ATTR_TYPE, context).Mandatory().NotEmpty().Get().Value,
                 TuyaVersion = elementNode.AttributeAsEnum<TuyaProtocolVersion>(ATTR_VERSION, context)
@@ -30,7 +29,6 @@ namespace Tuya2SNMP
                 SnmpPort = (int)elementNode.AttributeAsInt(ATTR_SNMP_PORT, context).Mandatory().Min(1).Max(65535).Get().Value,
                 SnmpCommunity = elementNode.AttributeAsString(ATTR_SNMP_COMMUNITY, context).Default("public").Get().Value
             };
-            device.CreateSnmpAdapter();
             return device;
         }
 

@@ -13,7 +13,9 @@ namespace Tuya2SNMP
     internal class Device
     {
 
-        public Config Config { get; init; }
+        public Config Config { get; set; }
+
+        #region Base data
         public string Name { get; init; }
         public string Type { get; init; }
         public TuyaProtocolVersion TuyaVersion { get; init; }
@@ -21,7 +23,9 @@ namespace Tuya2SNMP
         public string Key { get; init; }
         public int SnmpPort { get; init; }
         public string SnmpCommunity { get; init; }
+        #endregion
 
+        #region DPs, DP watching
         private readonly List<IDpWatcher> _dpWatchers = new();
 
         internal void SubscribeDpWatcher(IDpWatcher dpWatcher)
@@ -35,12 +39,37 @@ namespace Tuya2SNMP
             void DpChanged(Device device, int dp, object value);
         }
 
+        private void dpsUpdatedHandler(ITuyaDevice tuyaDevice, Dictionary<int, object> dps)
+        {
+            foreach (KeyValuePair<int, object> dp in dps) // replace and recast
+            {
+                object newValue = dp.Value.IsNumericType() ? (int)(long)dp.Value : dp.Value;
+                dps[dp.Key] = newValue;
+                _dps[dp.Key] = newValue;
+            }
+            dps.Foreach(kvp => NotifyDpWatchers(kvp.Key, kvp.Value));
+        }
+
+        public void SetDP(int dp, object value) => _ = _tuyaDevice.SetDpAsync(dp, value);
+        public bool GetDP(int dp, out object value) => _dps.TryGetValue(dp, out value);
+
+        public bool? GetDPbool(int dp)
+            => (GetDP(dp, out object value) && (value is bool boolValue)) ? boolValue : null;
+
+        public int? GetDPinteger(int dp)
+            => (GetDP(dp, out object value) && (value is int intValue)) ? intValue : null;
+
+        public string GetDPstring(int dp)
+            => (GetDP(dp, out object value) && (value is string strValue)) ? strValue : null;
+        #endregion
+
+        #region SNMP
         private DeviceSnmpAgent _agent;
 
         public void CreateSnmpAdapter()
         {
             _agent = new(SnmpPort, SnmpCommunity, Config.TrapSendingConfig);
-            DeviceSnmpAdapter adapter = DeviceSnmpAdapterTypeRegistry.GetInstance(Type, this, _agent.ObjectStore);
+            DeviceSnmpAdapter adapter = DeviceSnmpAdapterTypeRegistry.GetInstance(Type, this, _agent);
             if (adapter == null)
                 return;
         }
@@ -49,9 +78,11 @@ namespace Tuya2SNMP
         {
             _agent.Start();
         }
+        #endregion
 
+        #region Tuya
         private ITuyaDevice _tuyaDevice;
-        public readonly Dictionary<int, object> DPs = new();
+        private readonly Dictionary<int, object> _dps = new();
 
         public void CreateTuyaAgent()
         {
@@ -66,14 +97,14 @@ namespace Tuya2SNMP
             }
             if (_tuyaDevice != null)
             {
+                _tuyaDevice.ConnectionEstablished += _tuyaDevice_ConnectionEstablished;
                 _tuyaDevice.DpsUpdated += dpsUpdatedHandler;
             }
         }
 
-        private void dpsUpdatedHandler(ITuyaDevice tuyaDevice, Dictionary<int, object> dps)
+        private void _tuyaDevice_ConnectionEstablished(ITuyaDevice tuyaDevice, bool connected)
         {
-            DPs.AddOrReplaceValues(dps);
-            dps.Foreach(kvp => NotifyDpWatchers(kvp.Key, kvp.Value));
+            _ = tuyaDevice.QueryDpsAsync();
         }
 
         public void StartTuyaAgent()
@@ -83,6 +114,7 @@ namespace Tuya2SNMP
             if (_tuyaDevice.PermanentConnection)
                 _ = Task.Run(() => _tuyaDevice.ConnectAsync());
         }
+        #endregion
 
     }
 }
