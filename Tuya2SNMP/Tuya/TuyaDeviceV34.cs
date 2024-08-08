@@ -164,13 +164,21 @@ namespace Tuya2SNMP.Tuya
         private async Task HandleResponseAsync(TuyaLocalResponse response)
         {
 
-            if (response.Command == TuyaCommandV34.STATUS)
+            if (response.Command == TuyaCommandV34.HEART_BEAT)
             {
                 return;
             }
 
-            if (response.Command == TuyaCommandV34.HEART_BEAT)
+            if (response.Command == TuyaCommandV34.STATUS)
             {
+                if (string.IsNullOrEmpty(response.JSON))
+                    return;
+                var root = JObject.Parse(response.JSON);
+                if (root.GetValue("protocol").ToString() != "4")
+                    return;
+                var dps = JsonConvert.DeserializeObject<Dictionary<string, object>>(root["data"]["dps"].ToString());
+                Dictionary<int, object> dpsDict = dps.ToDictionary(kv => int.Parse(kv.Key), kv => kv.Value);
+                DpsUpdated?.Invoke(this, dpsDict);
                 return;
             }
 
