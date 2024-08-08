@@ -53,7 +53,5 @@ namespace Tuya2SNMP.SnmpAdapters
         protected abstract string getStringValue(Device device);
         protected abstract void setStringValue(Device device, string stringValue);
 
-        public record HexStringDescriptor(int Length, int? Min = 0, int? Max = null, int Unknown = 0);
-
     }
 }
