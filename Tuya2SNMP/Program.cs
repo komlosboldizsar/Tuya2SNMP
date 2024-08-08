@@ -26,6 +26,8 @@ namespace Tuya2SNMP
                 config = (new ConfigDeserializer()).LoadConfig(parsedArguments.ConfigFile ?? DEFAULT_CONFIG_FILE);
                 foreach (Device device in config.Devices)
                 {
+                    device.CreateSnmpAdapter();
+                    device.CreateTuyaAgent();
                     device.StartSnmpAgent();
                     device.StartTuyaAgent();
                 }

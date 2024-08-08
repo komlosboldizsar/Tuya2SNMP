@@ -1,9 +1,11 @@
-﻿using Lextm.SharpSnmpLib.Pipeline;
+﻿using BToolbox.SNMP;
+using Lextm.SharpSnmpLib.Pipeline;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Tuya2SNMP.SnmpAdapters.MiboxerFUTW;
 
 namespace Tuya2SNMP.SnmpAdapters
 {
@@ -23,11 +25,11 @@ namespace Tuya2SNMP.SnmpAdapters
                 _registeredFactories.Add(factory.Type, factory);
         }
 
-        public static DeviceSnmpAdapter GetInstance(string type, Device device, ObjectStore objectStore)
+        public static DeviceSnmpAdapter GetInstance(string type, Device device, SnmpAgent snmpAgent)
         {
             if (!_registeredFactories.TryGetValue(type, out DeviceSnmpAdapter.IFactory adapterFactory))
                 return null;
-            return adapterFactory.GetInstance(device, objectStore);
+            return adapterFactory.GetInstance(device, snmpAgent);
         }
 
     }

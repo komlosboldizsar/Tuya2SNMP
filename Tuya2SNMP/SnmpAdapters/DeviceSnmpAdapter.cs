@@ -19,7 +19,7 @@ namespace Tuya2SNMP.SnmpAdapters
         public interface IFactory
         {
             string Type { get; }
-            DeviceSnmpAdapter GetInstance(Device device, ObjectStore objectStore);
+            DeviceSnmpAdapter GetInstance(Device device, SnmpAgent snmpAgent);
         }
 
         private SnmpAgent _snmpAgent;
@@ -29,12 +29,13 @@ namespace Tuya2SNMP.SnmpAdapters
         public abstract string TrapEnterpriseBase { get; }
         protected abstract DataProvider[] DataProviders { get; }
 
-        public DeviceSnmpAdapter(Device device, ObjectStore objectStore)
+        public DeviceSnmpAdapter(Device device, SnmpAgent snmpAgent)
         {
+            _snmpAgent = snmpAgent;
             foreach (DataProvider dataProvider in DataProviders)
             {
-                DpSnmpObject snmpObject = new(OidBase, dataProvider);
-                objectStore.Add(snmpObject);
+                DpSnmpObject snmpObject = new(OidBase, device, dataProvider);
+                _snmpAgent.ObjectStore.Add(snmpObject);
                 foreach (int dependency in dataProvider.Dependencies)
                     _objectDependencies.GetAnyway(dependency).Add(snmpObject);
             }
