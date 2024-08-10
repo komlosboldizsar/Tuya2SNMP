@@ -1,0 +1,124 @@
+Tuya2SNMP-MiboxerFUT037W DEFINITIONS ::= BEGIN
+
+IMPORTS
+	OBJECT-TYPE, NOTIFICATION-TYPE, Integer32
+		FROM SNMPv2-SMI
+	DisplayString, TruthValue
+		FROM SNMPv2-TC
+	tuyadevices
+		FROM Tuya2SNMP;
+
+miboxerFUT037W    OBJECT IDENTIFIER ::= { tuyadevices 1 }
+dpUpdate          OBJECT IDENTIFIER ::= { miboxerFUT037W 1 }
+
+-------------------------
+-- Textual conventions --
+-------------------------
+ 
+WorkMode ::= TEXTUAL-CONVENTION
+	DISPLAY-HINT   "d"
+	STATUS         current
+	DESCRIPTION    ""
+	SYNTAX         INTEGER {
+		white(0),
+		colour(1),
+		scene(2),
+		music(3)
+	}
+	
+-------------------------
+-- Switches -------------
+-------------------------
+   
+dpSwitch OBJECT-TYPE
+	SYNTAX TruthValue
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION ""
+	::= { miboxerFUT037W 20 }
+	
+dpWorkmode OBJECT-TYPE
+	SYNTAX WorkMode
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION ""
+	::= { miboxerFUT037W 21 }
+	
+dpBright OBJECT-TYPE
+	SYNTAX INTEGER (10..1000)
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION ""
+	::= { miboxerFUT037W 22 }
+	
+dpTemp OBJECT-TYPE
+	SYNTAX INTEGER (0..1000)
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION ""
+	::= { miboxerFUT037W 23 }
+	
+dpColour OBJECT-TYPE
+	SYNTAX OCTET STRING
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION ""
+	::= { miboxerFUT037W 24 }
+	
+calcColourHue OBJECT-TYPE
+	SYNTAX INTEGER (0..1000)
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION ""
+	::= { miboxerFUT037W 10001 }
+	
+calcColourSaturation OBJECT-TYPE
+	SYNTAX INTEGER (0..1000)
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION ""
+	::= { miboxerFUT037W 10002 }
+	
+calcColourBrightness OBJECT-TYPE
+	SYNTAX INTEGER (10..1000)
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION ""
+	::= { miboxerFUT037W 10003 }
+
+-------------------------
+-- Traps ----------------
+-------------------------
+
+updateDpSwitch NOTIFICATION-TYPE
+	OBJECTS { dpSwitch }
+    STATUS current
+    DESCRIPTION ""
+	::= { dpUpdate 20 }
+	
+
+updateDpWorkmode NOTIFICATION-TYPE
+	OBJECTS { dpWorkmode }
+    STATUS current
+    DESCRIPTION ""
+	::= { dpUpdate 21 }
+
+updateDpBright NOTIFICATION-TYPE
+	OBJECTS { dpBright }
+    STATUS current
+    DESCRIPTION ""
+	::= { dpUpdate 20 }
+
+updateDpTemp NOTIFICATION-TYPE
+	OBJECTS { dpTemp }
+    STATUS current
+    DESCRIPTION ""
+	::= { dpUpdate 23 }
+
+updateDpColour NOTIFICATION-TYPE
+	OBJECTS { dpColour, calcColourHue, calcColourSaturation, calcColourBrightness }
+    STATUS current
+    DESCRIPTION ""
+	::= { dpUpdate 24 }
+
+END
