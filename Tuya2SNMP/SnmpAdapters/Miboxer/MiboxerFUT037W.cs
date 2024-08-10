@@ -24,7 +24,7 @@ namespace Tuya2SNMP.SnmpAdapters.MiboxerFUTW
         // .1 = miboxerFUT037W
         public const int DEVICE_GROUP = 1;
         public override string OidBase => $"{OIDs.DEVICES}.{DEVICE_GROUP}";
-        public override string TrapEnterpriseBase => $"{OidBase}.{OIDs.DEVICE_TRAPS}.1";
+        public override string TrapEnterpriseBase => $"{OidBase}.{OIDs.DEVICE_TRAPS}";
 
         protected override DataProvider[] DataProviders => new DataProvider[]
         {
