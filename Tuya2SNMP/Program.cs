@@ -24,13 +24,14 @@ namespace Tuya2SNMP
             {
                 LogDispatcher.I("Loading configuration...");
                 config = (new ConfigDeserializer()).LoadConfig(parsedArguments.ConfigFile ?? DEFAULT_CONFIG_FILE);
+                MySnmpAgent snmpAgent = new(config.SnmpConfig);
                 foreach (Device device in config.Devices)
                 {
-                    device.CreateSnmpAdapter();
+                    device.SetSnmpAgent(snmpAgent);
                     device.CreateTuyaAgent();
-                    device.StartSnmpAgent();
                     device.StartTuyaAgent();
                 }
+                snmpAgent.Start();
             }
             catch (DeserializationException e)
             {

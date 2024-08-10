@@ -1,6 +1,7 @@
 ﻿using BToolbox.Helpers;
 using BToolbox.SNMP;
 using Lextm.SharpSnmpLib;
+using System.Text;
 
 namespace Tuya2SNMP.SnmpAdapters
 {
@@ -17,7 +18,7 @@ namespace Tuya2SNMP.SnmpAdapters
         private readonly List<HexStringDescriptor> _descriptors = new();
         private readonly int _length;
 
-        public override ISnmpData Get(Device device) => new OctetString(getStringValue(device));
+        public override ISnmpData Get(Device device) => new OctetString(getStringValue(device) ?? buildDefaultString());
 
         public override void Set(Device device, ISnmpData data)
         {
@@ -48,6 +49,14 @@ namespace Tuya2SNMP.SnmpAdapters
                 i++;
             }
             setStringValue(device, stringValue);
+        }
+
+        private string buildDefaultString()
+        {
+            StringBuilder stringBuilder = new();
+            foreach (HexStringDescriptor descriptor in _descriptors)
+                stringBuilder.Append(descriptor.Unknown.ToString($"x{descriptor.Length}"));
+            return stringBuilder.ToString();
         }
 
         protected abstract string getStringValue(Device device);

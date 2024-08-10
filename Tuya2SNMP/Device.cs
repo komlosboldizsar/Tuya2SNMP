@@ -16,13 +16,12 @@ namespace Tuya2SNMP
         public Config Config { get; set; }
 
         #region Base data
+        public int Index { get; init; }
         public string Name { get; init; }
         public string Type { get; init; }
         public TuyaProtocolVersion TuyaVersion { get; init; }
         public string IP { get; init; }
         public string Key { get; init; }
-        public int SnmpPort { get; init; }
-        public string SnmpCommunity { get; init; }
         #endregion
 
         #region DPs, DP watching
@@ -64,19 +63,15 @@ namespace Tuya2SNMP
         #endregion
 
         #region SNMP
-        private DeviceSnmpAgent _agent;
+        private MySnmpAgent _snmpAgent;
+        private DeviceSnmpAdapter _adapter;
 
-        public void CreateSnmpAdapter()
+        public void SetSnmpAgent(MySnmpAgent snmpAgent)
         {
-            _agent = new(SnmpPort, SnmpCommunity, Config.TrapSendingConfig);
-            DeviceSnmpAdapter adapter = DeviceSnmpAdapterTypeRegistry.GetInstance(Type, this, _agent);
-            if (adapter == null)
-                return;
-        }
-
-        public void StartSnmpAgent()
-        {
-            _agent.Start();
+            if (_snmpAgent != null)
+                throw new Exception("SNMP agent already set for this device.");
+            _snmpAgent = snmpAgent;
+            _adapter = DeviceSnmpAdapterTypeRegistry.GetInstance(Type, this, _snmpAgent);
         }
         #endregion
 

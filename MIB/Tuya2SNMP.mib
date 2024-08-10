@@ -10,4 +10,14 @@ komlosboldizsar   OBJECT IDENTIFIER ::= { enterprises 59150 }
 tuya2snmp         OBJECT IDENTIFIER ::= { komlosboldizsar 6 }
 tuyadevices       OBJECT IDENTIFIER ::= { tuya2snmp 1 }
 
+-------------------------
+-- Textual conventions --
+-------------------------
+
+DeviceIndex ::= TEXTUAL-CONVENTION
+	DISPLAY-HINT   "d"
+	STATUS         current
+	DESCRIPTION    ""
+	SYNTAX         INTEGER (1..2147483647)
+
 END

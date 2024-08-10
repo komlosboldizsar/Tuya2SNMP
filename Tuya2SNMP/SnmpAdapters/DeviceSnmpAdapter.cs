@@ -25,16 +25,20 @@ namespace Tuya2SNMP.SnmpAdapters
         private SnmpAgent _snmpAgent;
         private readonly Dictionary<int, List<DpSnmpObject>> _objectDependencies = new();
 
-        public abstract string OidBase { get; }
-        public abstract string TrapEnterpriseBase { get; }
+        public abstract int TypeNumber { get; }
         protected abstract DataProvider[] DataProviders { get; }
+
+        private string OidBase => $"{OIDs.DEVICES}.{TypeNumber}";
+        private string VarOidBase => $"{OidBase}.1.1";
+        private const int INDEXER_VAR_OID = 0;
+        private string TrapEnterpriseBase => $"{OidBase}.{OIDs.DEVICE_TRAPS}";
 
         public DeviceSnmpAdapter(Device device, SnmpAgent snmpAgent)
         {
             _snmpAgent = snmpAgent;
             foreach (DataProvider dataProvider in DataProviders)
             {
-                DpSnmpObject snmpObject = new(OidBase, device, dataProvider);
+                DpSnmpObject snmpObject = new(VarOidBase, device, dataProvider);
                 _snmpAgent.ObjectStore.Add(snmpObject);
                 foreach (int dependency in dataProvider.Dependencies)
                     _objectDependencies.GetAnyway(dependency).Add(snmpObject);
@@ -46,7 +50,11 @@ namespace Tuya2SNMP.SnmpAdapters
         {
             if (!_objectDependencies.TryGetValue(dp, out List<DpSnmpObject> varGens))
                 return;
-            IList<Variable> variables = varGens.Select(vg => vg.Variable).ToList();
+            List<Variable> variables = new()
+            {
+                new(new ObjectIdentifier($"{VarOidBase}.{INDEXER_VAR_OID}"), new Integer32(device.Index))
+            };
+            variables.AddRange(varGens.Select(vg => vg.Variable));
             _snmpAgent.SendTraps($"dpchange:{dp}", new TrapEnterprise(TrapEnterpriseBase, dp), variables);
         }
 

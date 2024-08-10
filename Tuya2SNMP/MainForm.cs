@@ -72,6 +72,13 @@ namespace Tuya2SNMP
 
             builder = new();
             builder.Type(DataGridViewColumnType.TextBox);
+            builder.Header("Index");
+            builder.Width(100);
+            builder.UpdaterMethod((item, cell) => { cell.Value = item.Index; });
+            builder.BuildAndAdd(devicesTableT);
+
+            builder = new();
+            builder.Type(DataGridViewColumnType.TextBox);
             builder.Header("Name");
             builder.Width(150);
             builder.UpdaterMethod((item, cell) => { cell.Value = item.Name; });
@@ -89,13 +96,6 @@ namespace Tuya2SNMP
             builder.Header("IP address");
             builder.Width(150);
             builder.UpdaterMethod((item, cell) => { cell.Value = item.IP; });
-            builder.BuildAndAdd(devicesTableT);
-
-            builder = new();
-            builder.Type(DataGridViewColumnType.TextBox);
-            builder.Header("SNMP port");
-            builder.Width(120);
-            builder.UpdaterMethod((item, cell) => { cell.Value = item.SnmpPort; });
             builder.BuildAndAdd(devicesTableT);
 
             ObservableList<Device> configDevicesListProxy = new();

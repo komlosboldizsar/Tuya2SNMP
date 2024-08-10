@@ -5,11 +5,11 @@ IMPORTS
 		FROM SNMPv2-SMI
 	DisplayString, TruthValue
 		FROM SNMPv2-TC
-	tuyadevices
+	tuyadevices, DeviceIndex
 		FROM Tuya2SNMP;
 
-miboxerFUT037W    OBJECT IDENTIFIER ::= { tuyadevices 1 }
-dpUpdate          OBJECT IDENTIFIER ::= { miboxerFUT037W 1 }
+miboxerFUT037W    OBJECT IDENTIFIER ::= { tuyadevices 101 }
+dpUpdate          OBJECT IDENTIFIER ::= { miboxerFUT037W 2 }
 
 -------------------------
 -- Textual conventions --
@@ -29,62 +29,103 @@ WorkMode ::= TEXTUAL-CONVENTION
 -------------------------
 -- Switches -------------
 -------------------------
+
+devicesTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF DeviceEntry
+	ACCESS not-accessible
+	STATUS mandatory
+	DESCRIPTION ""
+	::= { miboxerFUT037W 1 }
+	
+deviceEntry OBJECT-TYPE
+	SYNTAX DeviceEntry
+	ACCESS not-accessible
+	STATUS mandatory
+	DESCRIPTION ""
+	INDEX { deviceIndex }
+	::= { devicesTable 1 }
+	
+DeviceEntry ::= SEQUENCE {
+	dpSwitch
+		TruthValue,
+	dpWorkmode
+		WorkMode,
+	dpBright
+		INTEGER,
+	dpTemp
+		INTEGER,
+	dpColour
+		OCTET STRING,
+	calcColourHue
+		INTEGER,
+	calcColourSaturation
+		INTEGER,
+	calcColourBrightness
+		INTEGER
+}
+
+deviceIndex OBJECT-TYPE
+	SYNTAX DeviceIndex
+	ACCESS not-accessible
+	STATUS mandatory
+	DESCRIPTION ""
+	::= { deviceEntry 0 }
    
 dpSwitch OBJECT-TYPE
 	SYNTAX TruthValue
 	ACCESS read-write
 	STATUS mandatory
 	DESCRIPTION ""
-	::= { miboxerFUT037W 20 }
+	::= { deviceEntry 20 }
 	
 dpWorkmode OBJECT-TYPE
 	SYNTAX WorkMode
 	ACCESS read-write
 	STATUS mandatory
 	DESCRIPTION ""
-	::= { miboxerFUT037W 21 }
+	::= { deviceEntry 21 }
 	
 dpBright OBJECT-TYPE
 	SYNTAX INTEGER (10..1000)
 	ACCESS read-write
 	STATUS mandatory
 	DESCRIPTION ""
-	::= { miboxerFUT037W 22 }
+	::= { deviceEntry 22 }
 	
 dpTemp OBJECT-TYPE
 	SYNTAX INTEGER (0..1000)
 	ACCESS read-write
 	STATUS mandatory
 	DESCRIPTION ""
-	::= { miboxerFUT037W 23 }
+	::= { deviceEntry 23 }
 	
 dpColour OBJECT-TYPE
 	SYNTAX OCTET STRING
 	ACCESS read-write
 	STATUS mandatory
 	DESCRIPTION ""
-	::= { miboxerFUT037W 24 }
+	::= { deviceEntry 24 }
 	
 calcColourHue OBJECT-TYPE
 	SYNTAX INTEGER (0..1000)
 	ACCESS read-write
 	STATUS mandatory
 	DESCRIPTION ""
-	::= { miboxerFUT037W 10001 }
+	::= { deviceEntry 10001 }
 	
 calcColourSaturation OBJECT-TYPE
 	SYNTAX INTEGER (0..1000)
 	ACCESS read-write
 	STATUS mandatory
 	DESCRIPTION ""
-	::= { miboxerFUT037W 10002 }
+	::= { deviceEntry 10002 }
 	
 calcColourBrightness OBJECT-TYPE
 	SYNTAX INTEGER (10..1000)
 	ACCESS read-write
 	STATUS mandatory
 	DESCRIPTION ""
-	::= { miboxerFUT037W 10003 }
+	::= { deviceEntry 10003 }
 
 -------------------------
 -- Traps ----------------
@@ -95,7 +136,6 @@ updateDpSwitch NOTIFICATION-TYPE
     STATUS current
     DESCRIPTION ""
 	::= { dpUpdate 20 }
-	
 
 updateDpWorkmode NOTIFICATION-TYPE
 	OBJECTS { dpWorkmode }

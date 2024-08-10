@@ -68,19 +68,15 @@ namespace Tuya2SNMP
                 config.Devices = devices;
                 devices.ForEach(d => d.Config = config);
             });
-            SimpleListDeserializer<TrapTarget, Config> trapTargetsDeserializer = new(ConfigTagNames.TRAPTARGETS, new TrapTargetDeserializer());
-            configDeserializer.Register(trapTargetsDeserializer, (config, trapTargets) =>
-            {
-                config.TrapSendingConfig = new();
-                trapTargets.Foreach(trd => config.TrapSendingConfig.AddReceiver(trd.IP, trd.Port, trd.Version, trd.Community, null, trd.SendMyIp));
-            });
+            configDeserializer.Register(new SnmpConfigDeserializer(), (config, snmpConfig) => config.SnmpConfig = snmpConfig);
             return configDeserializer;
         }
 
         private static void rootDeserializerContextInitializer(DeserializationContext context)
         {
             context.RegisterTypeName<Device>("device");
-            context.RegisterTypeName<TrapTarget>("trap target");
+            context.RegisterTypeName<SnmpConfig>("SNMP configuration");
+            context.RegisterTypeName<TrapTarget>("SNMP trap target");
         }
 
     }
