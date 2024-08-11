@@ -102,9 +102,7 @@ namespace Tuya2SNMP
             builder.UpdaterMethod((item, cell) => { cell.Value = item.IP; });
             builder.BuildAndAdd(devicesTableT);
 
-            ObservableList<Device> configDevicesListProxy = new();
-            configDevicesListProxy.AddRange(config.Devices);
-            devicesTableT.BoundCollection = configDevicesListProxy;
+            devicesTableT.BoundCollection = config.Devices;
 
         }
         #endregion
