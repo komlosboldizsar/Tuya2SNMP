@@ -64,14 +64,14 @@ namespace Tuya2SNMP
 
         #region SNMP
         private MySnmpAgent _snmpAgent;
-        private DeviceSnmpAdapter _adapter;
+        public DeviceSnmpAdapter Adapter { get; private set; }
 
         public void SetSnmpAgent(MySnmpAgent snmpAgent)
         {
             if (_snmpAgent != null)
                 throw new Exception("SNMP agent already set for this device.");
             _snmpAgent = snmpAgent;
-            _adapter = DeviceSnmpAdapterTypeRegistry.GetInstance(Type, this, _snmpAgent);
+            Adapter = DeviceSnmpAdapterTypeRegistry.GetInstance(Type, this, _snmpAgent);
         }
         #endregion
 

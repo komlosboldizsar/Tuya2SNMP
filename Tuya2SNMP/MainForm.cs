@@ -88,7 +88,11 @@ namespace Tuya2SNMP
             builder.Type(DataGridViewColumnType.TextBox);
             builder.Header("Type");
             builder.Width(250);
-            builder.UpdaterMethod((item, cell) => { cell.Value = item.Type; });
+            builder.UpdaterMethod((item, cell) => {
+                cell.Value = $"{item.Type} ({item.Adapter?.TypeNumber.ToString() ?? "unknw."})";
+                if (item.Adapter == null)
+                    cell.Style.BackColor = Color.LightPink;
+            });
             builder.BuildAndAdd(devicesTableT);
 
             builder = new();
