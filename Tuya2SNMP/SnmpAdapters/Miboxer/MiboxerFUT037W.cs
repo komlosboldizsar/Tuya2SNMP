@@ -21,7 +21,6 @@ namespace Tuya2SNMP.SnmpAdapters.MiboxerFUTW
             : base(device, snmpAgent)
         { }
 
-        // .1 = miboxerFUT037W
         public override int TypeNumber => 101;
 
         protected override DataProvider[] DataProviders => new DataProvider[]

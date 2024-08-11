@@ -8,8 +8,8 @@ IMPORTS
 	tuyadevices, DeviceIndex
 		FROM Tuya2SNMP;
 
-miboxerFUT037W    OBJECT IDENTIFIER ::= { tuyadevices 101 }
-dpUpdate          OBJECT IDENTIFIER ::= { miboxerFUT037W 2 }
+miboxerFUT037W    			OBJECT IDENTIFIER ::= { tuyadevices 101 }
+miboxerFUT037WdpUpdate      OBJECT IDENTIFIER ::= { miboxerFUT037W 2 }
 
 -------------------------
 -- Textual conventions --
@@ -30,135 +30,135 @@ WorkMode ::= TEXTUAL-CONVENTION
 -- Switches -------------
 -------------------------
 
-devicesTable OBJECT-TYPE
+miboxerFUT037WdevicesTable OBJECT-TYPE
 	SYNTAX SEQUENCE OF DeviceEntry
 	ACCESS not-accessible
 	STATUS mandatory
 	DESCRIPTION ""
 	::= { miboxerFUT037W 1 }
 	
-deviceEntry OBJECT-TYPE
+miboxerFUT037WdeviceEntry OBJECT-TYPE
 	SYNTAX DeviceEntry
 	ACCESS not-accessible
 	STATUS mandatory
 	DESCRIPTION ""
-	INDEX { deviceIndex }
-	::= { devicesTable 1 }
+	INDEX { miboxerFUT037WdeviceIndex }
+	::= { miboxerFUT037WdevicesTable 1 }
 	
 DeviceEntry ::= SEQUENCE {
-	dpSwitch
+	miboxerFUT037WdpSwitch
 		TruthValue,
-	dpWorkmode
+	miboxerFUT037WdpWorkmode
 		WorkMode,
-	dpBright
+	miboxerFUT037WdpBright
 		INTEGER,
-	dpTemp
+	miboxerFUT037WdpTemp
 		INTEGER,
-	dpColour
+	miboxerFUT037WdpColour
 		OCTET STRING,
-	calcColourHue
+	miboxerFUT037WcalcColourHue
 		INTEGER,
-	calcColourSaturation
+	miboxerFUT037WcalcColourSaturation
 		INTEGER,
-	calcColourBrightness
+	miboxerFUT037WcalcColourBrightness
 		INTEGER
 }
 
-deviceIndex OBJECT-TYPE
+miboxerFUT037WdeviceIndex OBJECT-TYPE
 	SYNTAX DeviceIndex
 	ACCESS not-accessible
 	STATUS mandatory
 	DESCRIPTION ""
-	::= { deviceEntry 0 }
+	::= { miboxerFUT037WdeviceEntry 0 }
    
-dpSwitch OBJECT-TYPE
+miboxerFUT037WdpSwitch OBJECT-TYPE
 	SYNTAX TruthValue
 	ACCESS read-write
 	STATUS mandatory
 	DESCRIPTION ""
-	::= { deviceEntry 20 }
+	::= { miboxerFUT037WdeviceEntry 20 }
 	
-dpWorkmode OBJECT-TYPE
+miboxerFUT037WdpWorkmode OBJECT-TYPE
 	SYNTAX WorkMode
 	ACCESS read-write
 	STATUS mandatory
 	DESCRIPTION ""
-	::= { deviceEntry 21 }
+	::= { miboxerFUT037WdeviceEntry 21 }
 	
-dpBright OBJECT-TYPE
+miboxerFUT037WdpBright OBJECT-TYPE
 	SYNTAX INTEGER (10..1000)
 	ACCESS read-write
 	STATUS mandatory
 	DESCRIPTION ""
-	::= { deviceEntry 22 }
+	::= { miboxerFUT037WdeviceEntry 22 }
 	
-dpTemp OBJECT-TYPE
+miboxerFUT037WdpTemp OBJECT-TYPE
 	SYNTAX INTEGER (0..1000)
 	ACCESS read-write
 	STATUS mandatory
 	DESCRIPTION ""
-	::= { deviceEntry 23 }
+	::= { miboxerFUT037WdeviceEntry 23 }
 	
-dpColour OBJECT-TYPE
+miboxerFUT037WdpColour OBJECT-TYPE
 	SYNTAX OCTET STRING
 	ACCESS read-write
 	STATUS mandatory
 	DESCRIPTION ""
-	::= { deviceEntry 24 }
+	::= { miboxerFUT037WdeviceEntry 24 }
 	
-calcColourHue OBJECT-TYPE
+miboxerFUT037WcalcColourHue OBJECT-TYPE
 	SYNTAX INTEGER (0..1000)
 	ACCESS read-write
 	STATUS mandatory
 	DESCRIPTION ""
-	::= { deviceEntry 10001 }
+	::= { miboxerFUT037WdeviceEntry 10001 }
 	
-calcColourSaturation OBJECT-TYPE
+miboxerFUT037WcalcColourSaturation OBJECT-TYPE
 	SYNTAX INTEGER (0..1000)
 	ACCESS read-write
 	STATUS mandatory
 	DESCRIPTION ""
-	::= { deviceEntry 10002 }
+	::= { miboxerFUT037WdeviceEntry 10002 }
 	
-calcColourBrightness OBJECT-TYPE
+miboxerFUT037WcalcColourBrightness OBJECT-TYPE
 	SYNTAX INTEGER (10..1000)
 	ACCESS read-write
 	STATUS mandatory
 	DESCRIPTION ""
-	::= { deviceEntry 10003 }
+	::= { miboxerFUT037WdeviceEntry 10003 }
 
 -------------------------
 -- Traps ----------------
 -------------------------
 
-updateDpSwitch NOTIFICATION-TYPE
-	OBJECTS { dpSwitch }
+miboxerFUT037WupdateDpSwitch NOTIFICATION-TYPE
+	OBJECTS { miboxerFUT037WdpSwitch }
     STATUS current
     DESCRIPTION ""
-	::= { dpUpdate 20 }
+	::= { miboxerFUT037WdpUpdate 20 }
 
-updateDpWorkmode NOTIFICATION-TYPE
-	OBJECTS { dpWorkmode }
+miboxerFUT037WupdateDpWorkmode NOTIFICATION-TYPE
+	OBJECTS { miboxerFUT037WdpWorkmode }
     STATUS current
     DESCRIPTION ""
-	::= { dpUpdate 21 }
+	::= { miboxerFUT037WdpUpdate 21 }
 
-updateDpBright NOTIFICATION-TYPE
-	OBJECTS { dpBright }
+miboxerFUT037WupdateDpBright NOTIFICATION-TYPE
+	OBJECTS { miboxerFUT037WdpBright }
     STATUS current
     DESCRIPTION ""
-	::= { dpUpdate 20 }
+	::= { miboxerFUT037WdpUpdate 20 }
 
-updateDpTemp NOTIFICATION-TYPE
-	OBJECTS { dpTemp }
+miboxerFUT037WupdateDpTemp NOTIFICATION-TYPE
+	OBJECTS { miboxerFUT037WdpTemp }
     STATUS current
     DESCRIPTION ""
-	::= { dpUpdate 23 }
+	::= { miboxerFUT037WdpUpdate 23 }
 
-updateDpColour NOTIFICATION-TYPE
-	OBJECTS { dpColour, calcColourHue, calcColourSaturation, calcColourBrightness }
+miboxerFUT037WupdateDpColour NOTIFICATION-TYPE
+	OBJECTS { miboxerFUT037WdpColour, miboxerFUT037WcalcColourHue, miboxerFUT037WcalcColourSaturation, miboxerFUT037WcalcColourBrightness }
     STATUS current
     DESCRIPTION ""
-	::= { dpUpdate 24 }
+	::= { miboxerFUT037WdpUpdate 24 }
 
 END
