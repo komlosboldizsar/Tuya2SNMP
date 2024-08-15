@@ -2,6 +2,7 @@ using BToolbox.Model;
 using BToolbox.SNMP;
 using BToolbox.XmlDeserializer.Exceptions;
 using CommandLine;
+using Lextm.SharpSnmpLib.Pipeline;
 using Tuya2SNMP.Logger;
 
 namespace Tuya2SNMP
@@ -31,6 +32,7 @@ namespace Tuya2SNMP
                     device.CreateTuyaAgent();
                     device.StartTuyaAgent();
                 }
+                snmpAgent.ObjectStore.Add(new EndScalarObject());
                 snmpAgent.Start();
             }
             catch (DeserializationException e)
