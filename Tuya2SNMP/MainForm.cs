@@ -2,6 +2,7 @@ using BToolbox.GUI.Helpers;
 using BToolbox.GUI.Tables;
 using BToolbox.Model;
 using Tuya2SNMP.Logger;
+using Tuya2SNMP.Tuya;
 
 namespace Tuya2SNMP
 {
@@ -66,7 +67,7 @@ namespace Tuya2SNMP
             mainTableLayoutPanel.Controls.Add(devicesTable, 0, 0);
             devicesTable.Dock = DockStyle.Fill;
             devicesTable.Margin = devicesTableMargin;
-            //devicesTable.InvokeSafe = true;
+            devicesTableT.InvokeSafe = true;
 
             CustomDataGridViewColumnDescriptorBuilder<Device> builder;
 
@@ -91,7 +92,7 @@ namespace Tuya2SNMP
             builder.UpdaterMethod((item, cell) => {
                 cell.Value = $"{item.Type} ({item.Adapter?.TypeNumber.ToString() ?? "unknw."})";
                 if (item.Adapter == null)
-                    cell.Style.BackColor = Color.LightPink;
+                    cell.Style.BackColor = Color.Red;
             });
             builder.BuildAndAdd(devicesTableT);
 
@@ -100,6 +101,42 @@ namespace Tuya2SNMP
             builder.Header("IP address");
             builder.Width(150);
             builder.UpdaterMethod((item, cell) => { cell.Value = item.IP; });
+            builder.BuildAndAdd(devicesTableT);
+
+            builder = new();
+            builder.Type(DataGridViewColumnType.TextBox);
+            builder.Header("Connection");
+            builder.Width(150);
+            builder.UpdaterMethod((item, cell) => {
+                if (item.TuyaDevice != null)
+                {
+                    if (item.TuyaDevice.Connected)
+                    {
+                        cell.Value = "connected";
+                        cell.Style.BackColor = Color.LightGreen;
+                    }
+                    else
+                    {
+                        cell.Value = "disconnected";
+                        cell.Style.BackColor = Color.LightPink;
+                    }
+                }
+                else
+                {
+                    cell.Value = "unknwn.";
+                    cell.Style.BackColor = Color.Red;
+                }
+            
+            });
+            builder.ExternalUpdateEventSubscriberMethod((item, updater) =>
+            {
+                if (item.TuyaDevice != null)
+                {
+                    void subsciber(ITuyaDevice tuyaDevice, bool connected) => updater();
+                    item.TuyaDevice.ConnectionEstablished += subsciber;
+                    item.TuyaDevice.ConnectionLost += subsciber;
+                }
+            });
             builder.BuildAndAdd(devicesTableT);
 
             devicesTableT.BoundCollection = config.Devices;
