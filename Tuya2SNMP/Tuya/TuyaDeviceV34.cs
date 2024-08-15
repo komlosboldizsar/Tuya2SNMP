@@ -36,11 +36,12 @@ namespace Tuya2SNMP.Tuya
 
         public int Port { get; private set; } = 6668;
         public int ConnectionTimeout { get; set; } = 500;
-        public int HeartbeatInterval { get; set; } = 500;
-        public int UnrespondedHeartbeatsBeforeDisconnect { get; set; } = 5;
+        public int HeartbeatInterval { get; set; } = 5000;
+        public int SecondsBeforeDisconnect { get; set; } = 15;
 
         public TuyaDeviceV34(string ip, byte[] localKey, int port = 6668)
         {
+            _lastSeen = DateTime.Now;
             IP = ip;
             LocalKey = localKey;
             Port = port;
@@ -173,7 +174,7 @@ namespace Tuya2SNMP.Tuya
         {
             while (true)
             {
-                if (_unrespondedHeartbeats >= UnrespondedHeartbeatsBeforeDisconnect)
+                if ((DateTime.Now - _lastSeen).TotalSeconds > SecondsBeforeDisconnect)
                     Disconnect();
                 if (PermanentConnection && _connectedMRS.IsSet)
                     await SendHeartbeatAsync();
@@ -181,13 +182,15 @@ namespace Tuya2SNMP.Tuya
             }
         }
 
+        private DateTime _lastSeen;
+
         private async Task HandleResponseAsync(TuyaLocalResponse response)
         {
 
+            _lastSeen = DateTime.Now;
+
             if (response.Command == TuyaCommandV34.HEART_BEAT)
             {
-                if (_unrespondedHeartbeats > 0)
-                    _unrespondedHeartbeats--;
                 return;
             }
 
