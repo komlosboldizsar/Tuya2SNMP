@@ -69,7 +69,7 @@ miboxerFUT037WdeviceIndex OBJECT-TYPE
 	ACCESS not-accessible
 	STATUS mandatory
 	DESCRIPTION ""
-	::= { miboxerFUT037WdeviceEntry 0 }
+	::= { miboxerFUT037WdeviceEntry 1 }
    
 miboxerFUT037WdpSwitch OBJECT-TYPE
 	SYNTAX TruthValue

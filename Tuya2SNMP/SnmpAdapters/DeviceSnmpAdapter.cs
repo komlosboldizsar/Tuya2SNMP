@@ -30,7 +30,7 @@ namespace Tuya2SNMP.SnmpAdapters
 
         private string OidBase => $"{OIDs.DEVICES}.{TypeNumber}";
         private string VarOidBase => $"{OidBase}.1.1";
-        private const int INDEXER_VAR_OID = 0;
+        private const int INDEXER_VAR_OID = 1;
         private string TrapEnterpriseBase => $"{OidBase}.{OIDs.DEVICE_TRAPS}";
 
         public DeviceSnmpAdapter(Device device, SnmpAgent snmpAgent)
@@ -54,7 +54,7 @@ namespace Tuya2SNMP.SnmpAdapters
             {
                 new(new ObjectIdentifier($"{VarOidBase}.{INDEXER_VAR_OID}"), new Integer32(device.Index))
             };
-            variables.AddRange(varGens.Select(vg => vg.Variable));
+            variables.AddRange(varGens.Select(vg => vg.VariableWithoutIndexer));
             _snmpAgent.SendTraps($"dpchange:{dp}", new TrapEnterprise(TrapEnterpriseBase, dp), variables);
         }
 

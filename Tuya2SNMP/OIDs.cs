@@ -16,8 +16,7 @@ namespace Tuya2SNMP
 
         public const string DEVICES = $"{PRODUCT}.1";
 
-        public const int DEVICE_TRAPS = 9999;
-        public const int CALCULATED_OFFSET = 10000;
+        public const int DEVICE_TRAPS = 2;
 
     }
 }

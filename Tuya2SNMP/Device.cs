@@ -49,7 +49,7 @@ namespace Tuya2SNMP
             dps.Foreach(kvp => NotifyDpWatchers(kvp.Key, kvp.Value));
         }
 
-        public void SetDP(int dp, object value) => _ = _tuyaDevice.SetDpAsync(dp, value);
+        public void SetDP(int dp, object value) => _ = TuyaDevice.SetDpAsync(dp, value);
         public bool GetDP(int dp, out object value) => _dps.TryGetValue(dp, out value);
 
         public bool? GetDPbool(int dp)
@@ -76,7 +76,7 @@ namespace Tuya2SNMP
         #endregion
 
         #region Tuya
-        private ITuyaDevice _tuyaDevice;
+        public ITuyaDevice TuyaDevice { get; private set; }
         private readonly Dictionary<int, object> _dps = new();
 
         public void CreateTuyaAgent()
@@ -84,16 +84,16 @@ namespace Tuya2SNMP
             switch (TuyaVersion)
             {
                 case TuyaProtocolVersion.V34:
-                    _tuyaDevice = new TuyaDeviceV34(IP, Key)
+                    TuyaDevice = new TuyaDeviceV34(IP, Key)
                     {
                         PermanentConnection = true
                     };
                     break;
             }
-            if (_tuyaDevice != null)
+            if (TuyaDevice != null)
             {
-                _tuyaDevice.ConnectionEstablished += _tuyaDevice_ConnectionEstablished;
-                _tuyaDevice.DpsUpdated += dpsUpdatedHandler;
+                TuyaDevice.ConnectionEstablished += _tuyaDevice_ConnectionEstablished;
+                TuyaDevice.DpsUpdated += dpsUpdatedHandler;
             }
         }
 
@@ -104,10 +104,10 @@ namespace Tuya2SNMP
 
         public void StartTuyaAgent()
         {
-            if (_tuyaDevice == null)
+            if (TuyaDevice == null)
                 return;
-            if (_tuyaDevice.PermanentConnection)
-                _ = Task.Run(() => _tuyaDevice.ConnectAsync());
+            if (TuyaDevice.PermanentConnection)
+                _ = Task.Run(() => TuyaDevice.ConnectAsync());
         }
         #endregion
 
