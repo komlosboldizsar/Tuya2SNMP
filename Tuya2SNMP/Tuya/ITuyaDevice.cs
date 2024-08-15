@@ -13,6 +13,7 @@ namespace Tuya2SNMP.Tuya
         Task QueryDpsAsync(CancellationToken cancellationToken = default);
         Task SetDpAsync(int dp, object value, CancellationToken cancellationToken = default);
         Task SetDpsAsync(Dictionary<int, object> dps, CancellationToken cancellationToken = default);
+        bool Connected { get; }
         event TuyaDeviceConnectionStateChangedHandler ConnectionEstablished;
         event TuyaDeviceConnectionStateChangedHandler ConnectionLost;
         event TuyaDeviceDpsUpdatedHandler DpsUpdated;

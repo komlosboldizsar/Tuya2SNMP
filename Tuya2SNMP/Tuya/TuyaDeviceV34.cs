@@ -36,8 +36,8 @@ namespace Tuya2SNMP.Tuya
 
         public int Port { get; private set; } = 6668;
         public int ConnectionTimeout { get; set; } = 500;
-        public int NetworkErrorRetriesInterval { get; set; } = 100;
-        public int NullRetriesInterval { get; set; } = 0;
+        public int HeartbeatInterval { get; set; } = 500;
+        public int UnrespondedHeartbeatsBeforeDisconnect { get; set; } = 5;
 
         public TuyaDeviceV34(string ip, byte[] localKey, int port = 6668)
         {
@@ -103,7 +103,9 @@ namespace Tuya2SNMP.Tuya
 
         public void Disconnect()
         {
-            ConnectionLost?.Invoke(this, false);
+            if (!Connected)
+                return;
+            Connected = false;
             _connectedMRS.Reset();
             SessionKey = null;
             _receiveTaskCancellationTokenSource.Cancel();
@@ -115,6 +117,21 @@ namespace Tuya2SNMP.Tuya
             client = null;
         }
 
+        private volatile bool _connected;
+        public bool Connected
+        {
+            get => _connected;
+            set
+            {
+                if (value == _connected)
+                    return;
+                _connected = value;
+                if (_connected)
+                    ConnectionEstablished?.Invoke(this, true);
+                else
+                    ConnectionLost?.Invoke(this, false);
+            }
+        }
 
         public event TuyaDeviceConnectionStateChangedHandler ConnectionEstablished;
         public event TuyaDeviceConnectionStateChangedHandler ConnectionLost;
@@ -129,6 +146,7 @@ namespace Tuya2SNMP.Tuya
         private NetworkStream _networkStream;
         private AsyncManualResetEvent _connectedMRS = new(false);
         private Task _receiveTask;
+        private int _unrespondedHeartbeats = 0;
 
         private async Task ReceiveTaskAsync()
         {
@@ -155,9 +173,11 @@ namespace Tuya2SNMP.Tuya
         {
             while (true)
             {
+                if (_unrespondedHeartbeats >= UnrespondedHeartbeatsBeforeDisconnect)
+                    Disconnect();
                 if (PermanentConnection && _connectedMRS.IsSet)
                     await SendHeartbeatAsync();
-                await Task.Delay(5000);
+                await Task.Delay(HeartbeatInterval);
             }
         }
 
@@ -166,6 +186,8 @@ namespace Tuya2SNMP.Tuya
 
             if (response.Command == TuyaCommandV34.HEART_BEAT)
             {
+                if (_unrespondedHeartbeats > 0)
+                    _unrespondedHeartbeats--;
                 return;
             }
 
@@ -202,8 +224,9 @@ namespace Tuya2SNMP.Tuya
                 await SendSessKeyNegFinishAsync(tempKeyRemote);
                 SessionKey = CalculateSessionKey(tempKeyRemote);
                 _keyExchangeStarted = false;
+                _unrespondedHeartbeats = 0;
                 _connectedMRS.Set();
-                ConnectionEstablished?.Invoke(this, true);
+                Connected = true;
                 return;
             }
 
@@ -248,7 +271,10 @@ namespace Tuya2SNMP.Tuya
         }
 
         public async Task SendHeartbeatAsync(CancellationToken cancellationToken = default)
-            => await SendWithinConnectionAsync(TuyaCommandV34.HEART_BEAT, FillJson(null).UTF8toBytes(), cancellationToken);
+        {
+            _unrespondedHeartbeats++;
+            await SendWithinConnectionAsync(TuyaCommandV34.HEART_BEAT, FillJson(null).UTF8toBytes(), cancellationToken);
+        }
 
         public async Task QueryDpsAsync(CancellationToken cancellationToken = default)
             => await SendWithinConnectionAsync(TuyaCommandV34.DP_QUERY_NEW, FillJson(null).UTF8toBytes(), cancellationToken);
