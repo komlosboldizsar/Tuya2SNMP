@@ -8,6 +8,7 @@ namespace Tuya2SNMP.Tuya
 {
     public enum TuyaProtocolVersion
     {
-        V34
+        V34,
+        V35
     }
 }

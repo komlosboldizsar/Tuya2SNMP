@@ -24,6 +24,7 @@ namespace Tuya2SNMP
                 Type = elementNode.AttributeAsString(ATTR_TYPE, context).Mandatory().NotEmpty().Get().Value,
                 TuyaVersion = elementNode.AttributeAsEnum<TuyaProtocolVersion>(ATTR_VERSION, context)
                                      .Translation("34", TuyaProtocolVersion.V34)
+                                     .Translation("35", TuyaProtocolVersion.V35)
                                      .Get().Value,
                 IP = elementNode.AttributeAsString(ATTR_IP, context).Mandatory().NotEmpty().Get().Value,
                 Key = elementNode.AttributeAsString(ATTR_KEY, context).Mandatory().NotEmpty().Get().Value

@@ -89,6 +89,12 @@ namespace Tuya2SNMP
                         PermanentConnection = true
                     };
                     break;
+                case TuyaProtocolVersion.V35:
+                    TuyaDevice = new TuyaDeviceV35(IP, Key)
+                    {
+                        PermanentConnection = true
+                    };
+                    break;
             }
             if (TuyaDevice != null)
             {

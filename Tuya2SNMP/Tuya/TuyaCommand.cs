@@ -1,6 +1,6 @@
 ﻿namespace Tuya2SNMP.Tuya
 {
-    public enum TuyaCommandV34
+    public enum TuyaCommand
     {
         UDP = 0,
         SESS_KEY_NEG_START = 3,

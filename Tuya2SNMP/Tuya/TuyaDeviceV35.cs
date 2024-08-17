@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 namespace Tuya2SNMP.Tuya
 {
 
-    public class TuyaDeviceV34 : ITuyaDevice, IDisposable
+    public class TuyaDeviceV35 : ITuyaDevice, IDisposable
     {
 
         public string IP { get; private set; }
@@ -39,7 +39,7 @@ namespace Tuya2SNMP.Tuya
         public int HeartbeatInterval { get; set; } = 5000;
         public int SecondsBeforeDisconnect { get; set; } = 15;
 
-        public TuyaDeviceV34(string ip, byte[] localKey, int port = 6668)
+        public TuyaDeviceV35(string ip, byte[] localKey, int port = 6668)
         {
             _lastSeen = DateTime.Now;
             IP = ip;
@@ -49,16 +49,16 @@ namespace Tuya2SNMP.Tuya
             _ = Task.Run(HeartbeatTaskAsync);
         }
 
-        public TuyaDeviceV34(string ip, string localKey, int port = 6668)
+        public TuyaDeviceV35(string ip, string localKey, int port = 6668)
             : this(ip, localKey.UTF8toBytes(), port)
         { }
 
         private TcpClient client = null;
         private readonly SemaphoreSlim sem = new(1);
-        internal readonly TuyaCoderV34 coder;
+        internal readonly TuyaCoderV35 coder;
 
-        public byte[] EncodeRequest(TuyaCommand command, object content)
-            => coder.EncodeRequest(command, content);
+        public byte[] EncodeRequest(TuyaCommand command, object content, out byte[] nonce)
+            => coder.EncodeRequest(command, content, out nonce);
 
         public async Task SendRawAsync(byte[] data, CancellationToken cancellationToken = default)
         {
@@ -67,7 +67,7 @@ namespace Tuya2SNMP.Tuya
         }
 
         public async Task SendAsync(TuyaCommand command, object content, CancellationToken cancellationToken = default)
-            => await SendRawAsync(EncodeRequest(command, content), cancellationToken);
+            => await SendRawAsync(EncodeRequest(command, content, out byte[] _), cancellationToken);
 
         public async Task SendWithinConnectionAsync(TuyaCommand command, object content, CancellationToken cancellationToken = default)
         {
@@ -156,12 +156,12 @@ namespace Tuya2SNMP.Tuya
             while (true)
             {
                 using MemoryStream currentPacketMemoryStream = new();
-                int bytes = await _networkStream.ReadAsync(buffer, 0, 16, cancellationToken);
+                int bytes = await _networkStream.ReadAsync(buffer, 0, 18, cancellationToken);
                 int seekOffset = 0;
-                while (seekOffset + 4 >= bytes && !buffer.Part(seekOffset, 4).SequenceEqual(TuyaCoderV34.PREFIX))
+                while (seekOffset + 4 >= bytes && !buffer.Part(seekOffset, 4).SequenceEqual(TuyaCoderV35.PREFIX))
                     seekOffset += 4;
                 await currentPacketMemoryStream.WriteAsync(buffer, seekOffset, bytes - seekOffset);
-                int length = buffer.ToInt(seekOffset + 12);
+                int length = buffer.ToInt(seekOffset + 14) + 4;
                 bytes = await _networkStream.ReadAsync(buffer, 0, length, cancellationToken);
                 await currentPacketMemoryStream.WriteAsync(buffer, 0, length);
                 byte[] packet = currentPacketMemoryStream.ToArray();
@@ -257,7 +257,7 @@ namespace Tuya2SNMP.Tuya
             byte[] sessionKeyNotEncoded = new byte[KEY_LENGTH];
             for (int i = 0; i < KEY_LENGTH; i++)
                 sessionKeyNotEncoded[i] = (byte)(_tempKeyLocal[i] ^ tempKeyRemote[i]);
-            return coder.Encrypt(sessionKeyNotEncoded);
+            return coder.Encrypt(sessionKeyNotEncoded, null, out byte[] _, out byte[] _, _tempKeyLocal.Part(0, 12));
         }
 
         private async Task SendSessKeyNegFinishAsync(byte[] tempKeyRemote, CancellationToken cancellationToken = default)

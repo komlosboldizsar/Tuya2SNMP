@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Tuya2SNMP.Tuya
 {
-    internal class TuyaCoderV34
+    internal class TuyaCoderV35
     {
 
         public int SeqNo { get; protected set; } = 0;
@@ -18,10 +18,10 @@ namespace Tuya2SNMP.Tuya
         public byte[] SessionKey;
         private byte[] UsedKey => SessionKey ?? localKey;
 
-        public TuyaCoderV34(byte[] localKey)
+        public TuyaCoderV35(byte[] localKey)
             => this.localKey = localKey;
 
-        private static readonly byte[] VERSION_HEADER = Encoding.UTF8.GetBytes("3.4");
+        private static readonly byte[] VERSION_HEADER = Encoding.UTF8.GetBytes("3.5");
         private static readonly TuyaCommand[] COMMANDS_WITHOUT_VERSION = new TuyaCommand[]
         {
             TuyaCommand.SESS_KEY_NEG_START,
@@ -32,60 +32,54 @@ namespace Tuya2SNMP.Tuya
             TuyaCommand.UPDATE_DPS
         };
 
-        public static readonly byte[] PREFIX = new byte[] { 0, 0, 0x55, 0xAA };
-        public static readonly byte[] SUFFIX = { 0, 0, 0xAA, 0x55 };
+        public static readonly byte[] PREFIX = new byte[] { 0, 0, 0x66, 0x99 };
+        public static readonly byte[] SUFFIX = { 0, 0, 0x99, 0x66 };
+        private const int LENGTH_NONCE = 12;
+        private const int LENGTH_TAG = 16;
 
         public TuyaLocalResponse DecodeResponse(byte[] data)
         {
 
             // Check length and prefix
-            if (data.Length < 20 || !data.Take(PREFIX.Length).SequenceEqual(PREFIX))
+            if (data.Length < 22 || !data.Take(PREFIX.Length).SequenceEqual(PREFIX))
                 throw new InvalidDataException("Invalid header/prefix");
 
             // Check length
-            int length = data.ToInt(12);
-            if (data.Length != 16 + length)
+            int length = data.ToInt(14);
+            if (data.Length != 22 + length)
                 throw new InvalidDataException("Invalid length");
 
             // Check suffix
-            if (!data.Skip(16 + length - SUFFIX.Length).Take(SUFFIX.Length).SequenceEqual(SUFFIX))
+            if (!data.Part(18 + length, SUFFIX.Length).SequenceEqual(SUFFIX))
                 throw new InvalidDataException("Invalid suffix");
 
             // Packet number
-            uint seqNo = data.ToUInt(4);
+            uint seqNo = data.ToUInt(6);
 
             // Command
-            var command = (TuyaCommand)data.ToUInt(8);
+            var command = (TuyaCommand)data.ToUInt(10);
             if (command == TuyaCommand.UDP)
                 return null;
 
-            // Return code
-            int returnCode = data.ToInt(16);
-
             // Payload
-            int payloadOffset = 16 + ((returnCode & 0xFFFFFF00) == 0x00000000 ? 4 : 0);
-            byte[] payload = data.Part(payloadOffset, length - 36);
+            byte[] payload = data.Part(18 + LENGTH_NONCE, length - LENGTH_NONCE - LENGTH_TAG);
+            byte[] nonce = data.Part(18, LENGTH_NONCE);
+            byte[] tag = data.Part(18 + length - LENGTH_TAG, LENGTH_TAG);
+            byte[] associated = data.Part(4, 14);
 
-            // CRC
-            byte[] expectedCrc = data.Part(data.Length - 36, 32);
-            byte[] computedCrc = MAC(data.Part(0, -36));
-            if (!expectedCrc.SequenceEqual(computedCrc))
-                throw new InvalidDataException("Expected and received CRC don't match");
+            byte[] decryptedPayload = Decrypt(payload, associated, nonce, tag);
 
-            byte[] decryptedPayload = Decrypt(payload.Part(0, -4));
             if (!COMMANDS_WITHOUT_VERSION.Contains(command))
                 decryptedPayload = decryptedPayload.Part(15);
-            if (decryptedPayload.Length > 0) // De-pad
-            {
-                byte last = decryptedPayload[^1];
-                decryptedPayload = decryptedPayload.Part(0, -last);
-            }
+
+            int returnCode = data.Part(0, 4).ToInt();
+            decryptedPayload = decryptedPayload.Part(4);
 
             return new TuyaLocalResponse(command, seqNo, returnCode, decryptedPayload);
 
         }
 
-        internal byte[] EncodeRequest(TuyaCommand command, object content)
+        internal byte[] EncodeRequest(TuyaCommand command, object content, out byte[] nonce)
         {
 
             byte[] payload;
@@ -104,16 +98,19 @@ namespace Tuya2SNMP.Tuya
                 payload = bufferForHeader;
             }
 
-            payload = Pad(payload);
-            payload = Encrypt(payload);
+            byte[] unknown = new byte[] { 0, 0 };
 
             using MemoryStream memoryStream = new();
             memoryStream.Write(PREFIX, 0, 4);
+            memoryStream.Write(unknown, 0, 2);
             memoryStream.WriteBytesBigEndian(++SeqNo);
             memoryStream.WriteBytesBigEndian((uint)command);
-            memoryStream.WriteBytesBigEndian(payload.Length + 36);
+            memoryStream.WriteBytesBigEndian(payload.Length + LENGTH_NONCE + LENGTH_TAG); // 12: nonce, 16: tag
+            byte[] assoc = memoryStream.ToArray().Part(4);
+            payload = Encrypt(payload, assoc, out nonce, out byte[] tag);
+            memoryStream.Write(nonce);
             memoryStream.Write(payload);
-            memoryStream.Write(MAC(memoryStream.ToArray()));
+            memoryStream.Write(tag);
             memoryStream.Write(SUFFIX, 0, 4);
             return memoryStream.ToArray();
 
@@ -128,23 +125,30 @@ namespace Tuya2SNMP.Tuya
             return buffer;
         }
 
-        internal byte[] Decrypt(byte[] data) => Crypt(data, aes => aes.CreateDecryptor());
-        internal byte[] Encrypt(byte[] data) => Crypt(data, aes => aes.CreateEncryptor());
-        internal byte[] Crypt(byte[] data, Func<Aes, ICryptoTransform> createCryptor)
+        internal byte[] Decrypt(byte[] dataEncrypted, byte[] dataAssociated, byte[] nonce, byte[] tag)
         {
-            if (data.Length == 0)
-                return data;
-            Aes aes = Aes.Create();
-            aes.Mode = CipherMode.ECB;
-            aes.Key = UsedKey;
-            aes.Padding = PaddingMode.None;
-            using MemoryStream memoryStream = new();
-            using CryptoStream cryptoStream = new(memoryStream, createCryptor(aes), CryptoStreamMode.Write);
-            cryptoStream.Write(data, 0, data.Length);
-            cryptoStream.Close();
-            data = memoryStream.ToArray();
-            aes.Dispose();
+            AesGcm aes = new(UsedKey);
+            byte[] data = new byte[dataEncrypted.Length];
+            aes.Decrypt(nonce, dataEncrypted, tag, data, dataAssociated);
             return data;
+        }
+        
+        internal byte[] Encrypt(byte[] data, byte[] dataAssociated, out byte[] nonce, out byte[] tag, byte[] givenNonce = null)
+        {
+            AesGcm aes = new(UsedKey);
+            if (givenNonce != null)
+            {
+                nonce = givenNonce;
+            }
+            else
+            {
+                nonce = new byte[LENGTH_NONCE];
+                RandomNumberGenerator.Fill(nonce);
+            }
+            tag = new byte[LENGTH_TAG];
+            byte[] dataEncrypted = new byte[data.Length];
+            aes.Encrypt(nonce, data, dataEncrypted, tag, dataAssociated);
+            return dataEncrypted;
         }
 
         internal byte[] MAC(byte[] data)

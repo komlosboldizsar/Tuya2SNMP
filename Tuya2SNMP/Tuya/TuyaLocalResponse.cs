@@ -8,13 +8,13 @@ namespace Tuya2SNMP.Tuya
     public class TuyaLocalResponse
     {
 
-        public TuyaCommandV34 Command { get; }
+        public TuyaCommand Command { get; }
         public uint SequenceNumber { get; }
         public int ReturnCode { get; }
         public byte[] ByteArray { get; }
         public string JSON { get; }
 
-        internal TuyaLocalResponse(TuyaCommandV34 command, uint sequenceNumber, int returnCode, byte[] byteArray)
+        internal TuyaLocalResponse(TuyaCommand command, uint sequenceNumber, int returnCode, byte[] byteArray)
         {
             Command = command;
             SequenceNumber = sequenceNumber;
