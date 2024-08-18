@@ -6,29 +6,27 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Tuya2SNMP.SnmpAdapters.MiboxerFUTW
+namespace Tuya2SNMP.SnmpAdapters.General
 {
-    internal class MiboxerFUT037W : DeviceSnmpAdapter
+    internal class SimpleRGB : DeviceSnmpAdapter
     {
 
         public class Factory : IFactory
         {
-            public string Type { get; } = "miboxer_fut037w";
-            public DeviceSnmpAdapter GetInstance(Device device, SnmpAgent snmpAgent) => new MiboxerFUT037W(device, snmpAgent);
+            public string Type { get; } = "simple_rgb";
+            public DeviceSnmpAdapter GetInstance(Device device, SnmpAgent snmpAgent) => new SimpleRGB(device, snmpAgent);
         }
 
-        public MiboxerFUT037W(Device device, SnmpAgent snmpAgent)
+        public SimpleRGB(Device device, SnmpAgent snmpAgent)
             : base(device, snmpAgent)
         { }
 
-        public override int TypeNumber => 101;
+        public override int TypeNumber => 1;
 
         protected override DataProvider[] DataProviders => new DataProvider[]
         {
             new SimpleBoolDataProvider(DP_SWITCH),
             new SimpleEnumDataProvider(DP_WORKMODE, workmodes, -1),
-            new SimpleIntDataProvider(DP_BRIGHT, -1, 10, 1000),
-            new SimpleIntDataProvider(DP_TEMP, -1, 0, 1000),
             new SimpleHexStringDataProvider(DP_COLOUR, colourHexStringDescriptors),
             new HexPartCalcIntDataProvider(CALC_COLOUR_HUE, DP_COLOUR, colourHexStringDescriptors, 0),
             new HexPartCalcIntDataProvider(CALC_COLOUR_SATURATION, DP_COLOUR, colourHexStringDescriptors, 1),
@@ -37,8 +35,6 @@ namespace Tuya2SNMP.SnmpAdapters.MiboxerFUTW
 
         public const int DP_SWITCH = 20;
         public const int DP_WORKMODE = 21;
-        public const int DP_BRIGHT = 22;
-        public const int DP_TEMP = 23;
         public const int DP_COLOUR = 24;
         public const int CALC_COLOUR_HUE = 10001;
         public const int CALC_COLOUR_SATURATION = 10002;

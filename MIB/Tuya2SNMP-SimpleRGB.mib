@@ -1,0 +1,138 @@
+Tuya2SNMP-SimpleRGB DEFINITIONS ::= BEGIN
+
+IMPORTS
+	OBJECT-TYPE, NOTIFICATION-TYPE, Integer32
+		FROM SNMPv2-SMI
+	DisplayString, TruthValue
+		FROM SNMPv2-TC
+	tuyadevices, DeviceIndex
+		FROM Tuya2SNMP;
+
+simpleRGB    			OBJECT IDENTIFIER ::= { tuyadevices 1 }
+simpleRGBdpUpdate       OBJECT IDENTIFIER ::= { simpleRGB 1 }
+
+-------------------------
+-- Textual conventions --
+-------------------------
+ 
+WorkMode ::= TEXTUAL-CONVENTION
+	DISPLAY-HINT   "d"
+	STATUS         current
+	DESCRIPTION    ""
+	SYNTAX         INTEGER {
+		white(0),
+		colour(1),
+		scene(2),
+		music(3)
+	}
+	
+-------------------------
+-- Switches -------------
+-------------------------
+
+simpleRGBdevicesTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF DeviceEntry
+	ACCESS not-accessible
+	STATUS mandatory
+	DESCRIPTION ""
+	::= { simpleRGB 1 }
+	
+simpleRGBdeviceEntry OBJECT-TYPE
+	SYNTAX DeviceEntry
+	ACCESS not-accessible
+	STATUS mandatory
+	DESCRIPTION ""
+	INDEX { simpleRGBdeviceIndex }
+	::= { simpleRGBdevicesTable 1 }
+	
+DeviceEntry ::= SEQUENCE {
+	simpleRGBdpSwitch
+		TruthValue,
+	simpleRGBdpWorkmode
+		WorkMode,
+	simpleRGBdpBright
+		INTEGER,
+	simpleRGBdpTemp
+		INTEGER,
+	simpleRGBdpColour
+		OCTET STRING,
+	simpleRGBcalcColourHue
+		INTEGER,
+	simpleRGBcalcColourSaturation
+		INTEGER,
+	simpleRGBcalcColourBrightness
+		INTEGER
+}
+
+simpleRGBdeviceIndex OBJECT-TYPE
+	SYNTAX DeviceIndex
+	ACCESS not-accessible
+	STATUS mandatory
+	DESCRIPTION ""
+	::= { simpleRGBdeviceEntry 1 }
+   
+simpleRGBdpSwitch OBJECT-TYPE
+	SYNTAX TruthValue
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION ""
+	::= { simpleRGBdeviceEntry 20 }
+	
+simpleRGBdpWorkmode OBJECT-TYPE
+	SYNTAX WorkMode
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION ""
+	::= { simpleRGBdeviceEntry 21 }
+	
+simpleRGBdpColour OBJECT-TYPE
+	SYNTAX OCTET STRING
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION ""
+	::= { simpleRGBdeviceEntry 24 }
+	
+simpleRGBcalcColourHue OBJECT-TYPE
+	SYNTAX INTEGER (0..1000)
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION ""
+	::= { simpleRGBdeviceEntry 10001 }
+	
+simpleRGBcalcColourSaturation OBJECT-TYPE
+	SYNTAX INTEGER (0..1000)
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION ""
+	::= { simpleRGBdeviceEntry 10002 }
+	
+simpleRGBcalcColourBrightness OBJECT-TYPE
+	SYNTAX INTEGER (10..1000)
+	ACCESS read-write
+	STATUS mandatory
+	DESCRIPTION ""
+	::= { simpleRGBdeviceEntry 10003 }
+
+-------------------------
+-- Traps ----------------
+-------------------------
+
+simpleRGBupdateDpSwitch NOTIFICATION-TYPE
+	OBJECTS { simpleRGBdpSwitch }
+    STATUS current
+    DESCRIPTION ""
+	::= { simpleRGBdpUpdate 20 }
+
+simpleRGBupdateDpWorkmode NOTIFICATION-TYPE
+	OBJECTS { simpleRGBdpWorkmode }
+    STATUS current
+    DESCRIPTION ""
+	::= { simpleRGBdpUpdate 21 }
+
+simpleRGBupdateDpColour NOTIFICATION-TYPE
+	OBJECTS { simpleRGBdpColour, simpleRGBcalcColourHue, simpleRGBcalcColourSaturation, simpleRGBcalcColourBrightness }
+    STATUS current
+    DESCRIPTION ""
+	::= { simpleRGBdpUpdate 24 }
+
+END

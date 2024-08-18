@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Tuya2SNMP.SnmpAdapters.MiboxerFUTW;
+using Tuya2SNMP.SnmpAdapters.General;
 
 namespace Tuya2SNMP.SnmpAdapters
 {
@@ -16,7 +16,8 @@ namespace Tuya2SNMP.SnmpAdapters
 
         private static readonly DeviceSnmpAdapter.IFactory[] _factoriesToRegister = new DeviceSnmpAdapter.IFactory[]
         {
-            new MiboxerFUT037W.Factory()
+            new SimpleRGB.Factory(),
+            new SimpleRGBWW.Factory()
         };
 
         static DeviceSnmpAdapterTypeRegistry()
