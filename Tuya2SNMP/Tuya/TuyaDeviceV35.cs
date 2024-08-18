@@ -145,7 +145,7 @@ namespace Tuya2SNMP.Tuya
         private bool _keyExchangeStarted = false;
         private byte[] _tempKeyLocal;
         private NetworkStream _networkStream;
-        private AsyncManualResetEvent _connectedMRS = new(false);
+        private readonly AsyncManualResetEvent _connectedMRS = new(false);
         private Task _receiveTask;
 
         private async Task ReceiveTaskAsync()
@@ -237,7 +237,7 @@ namespace Tuya2SNMP.Tuya
 
         private async Task SendSessKeyNegStartAsync(CancellationToken cancellationToken = default)
         {
-            _tempKeyLocal = RandomBytes(KEY_LENGTH);
+            _tempKeyLocal = RandomNumberGenerator.GetBytes(KEY_LENGTH);
             _keyExchangeStarted = true;
             await SendAsync(TuyaCommand.SESS_KEY_NEG_START, _tempKeyLocal, cancellationToken);
         }
@@ -264,13 +264,6 @@ namespace Tuya2SNMP.Tuya
             await SendAsync(TuyaCommand.SESS_KEY_NEG_FINISH, tempKeyremoteCrc, cancellationToken);
         }
 
-        private byte[] RandomBytes(int count)
-        {
-            byte[] bytes = new byte[count];
-            new Random().NextBytes(bytes);
-            return bytes;
-        }
-
         public async Task SendHeartbeatAsync(CancellationToken cancellationToken = default)
             => await SendWithinConnectionAsync(TuyaCommand.HEART_BEAT, FillJson(null).UTF8toBytes(), cancellationToken);
 
@@ -283,7 +276,7 @@ namespace Tuya2SNMP.Tuya
         public async Task SetDpsAsync(Dictionary<int, object> dps, CancellationToken cancellationToken = default)
             => await SendWithinConnectionAsync(TuyaCommand.CONTROL_NEW, FillJson(new Dictionary<string, object> { { "dps", dps } }).UTF8toBytes(), cancellationToken);
 
-        public string FillJson(string dataJson)
+        public static string FillJson(string dataJson)
         {
             var dataObj = string.IsNullOrEmpty(dataJson) ? new JObject() : JObject.Parse(dataJson);
             dataObj.AddFirst(new JProperty("ctype", 0));
@@ -296,7 +289,7 @@ namespace Tuya2SNMP.Tuya
             return root.ToString(Formatting.None);
         }
 
-        public string FillJson(object data)
+        public static string FillJson(object data)
             => FillJson(JsonConvert.SerializeObject(data, Formatting.None));
 
         public void Dispose()
