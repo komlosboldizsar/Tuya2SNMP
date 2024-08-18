@@ -147,7 +147,6 @@ namespace Tuya2SNMP.Tuya
         private NetworkStream _networkStream;
         private AsyncManualResetEvent _connectedMRS = new(false);
         private Task _receiveTask;
-        private int _unrespondedHeartbeats = 0;
 
         private async Task ReceiveTaskAsync()
         {
@@ -227,7 +226,6 @@ namespace Tuya2SNMP.Tuya
                 await SendSessKeyNegFinishAsync(tempKeyRemote);
                 SessionKey = CalculateSessionKey(tempKeyRemote);
                 _keyExchangeStarted = false;
-                _unrespondedHeartbeats = 0;
                 _connectedMRS.Set();
                 Connected = true;
                 return;
@@ -274,10 +272,7 @@ namespace Tuya2SNMP.Tuya
         }
 
         public async Task SendHeartbeatAsync(CancellationToken cancellationToken = default)
-        {
-            _unrespondedHeartbeats++;
-            await SendWithinConnectionAsync(TuyaCommand.HEART_BEAT, FillJson(null).UTF8toBytes(), cancellationToken);
-        }
+            => await SendWithinConnectionAsync(TuyaCommand.HEART_BEAT, FillJson(null).UTF8toBytes(), cancellationToken);
 
         public async Task QueryDpsAsync(CancellationToken cancellationToken = default)
             => await SendWithinConnectionAsync(TuyaCommand.DP_QUERY_NEW, FillJson(null).UTF8toBytes(), cancellationToken);
