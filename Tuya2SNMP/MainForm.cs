@@ -89,7 +89,8 @@ namespace Tuya2SNMP
             builder.Type(DataGridViewColumnType.TextBox);
             builder.Header("Type");
             builder.Width(250);
-            builder.UpdaterMethod((item, cell) => {
+            builder.UpdaterMethod((item, cell) =>
+            {
                 cell.Value = $"{item.Type} ({item.Adapter?.TypeNumber.ToString() ?? "unknw."})";
                 if (item.Adapter == null)
                     cell.Style.BackColor = Color.Red;
@@ -107,7 +108,8 @@ namespace Tuya2SNMP
             builder.Type(DataGridViewColumnType.TextBox);
             builder.Header("Connection");
             builder.Width(150);
-            builder.UpdaterMethod((item, cell) => {
+            builder.UpdaterMethod((item, cell) =>
+            {
                 if (item.TuyaDevice != null)
                 {
                     if (item.TuyaDevice.Connected)
@@ -126,7 +128,7 @@ namespace Tuya2SNMP
                     cell.Value = "unknwn.";
                     cell.Style.BackColor = Color.Red;
                 }
-            
+
             });
             builder.ExternalUpdateEventSubscriberMethod((item, updater) =>
             {

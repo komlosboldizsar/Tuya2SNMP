@@ -6,6 +6,7 @@
     <Nullable>disable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationIcon>../t2snmpicon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>

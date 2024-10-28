@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             panel1 = new Panel();
             mainTableLayoutPanel = new TableLayoutPanel();
             logTextBox = new RichTextBox();
@@ -129,7 +130,7 @@
             // statusStripSpring
             // 
             statusStripSpring.Name = "statusStripSpring";
-            statusStripSpring.Size = new Size(258, 20);
+            statusStripSpring.Size = new Size(297, 20);
             statusStripSpring.Spring = true;
             // 
             // verboseLogSwitchLabel
@@ -167,6 +168,7 @@
             ClientSize = new Size(800, 450);
             Controls.Add(panel1);
             Controls.Add(statusStrip);
+            Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "MainForm";
             Text = "Tuya2SNMP";
             Load += MainForm_Load;
